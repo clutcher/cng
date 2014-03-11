@@ -1,19 +1,23 @@
+import random
+
 import networkx as nx
 import matplotlib.pyplot as plt
-import random
-import sys
 
 
 class GameMap(object):
-
     """Game map generating class"""
 
-    def __init__(self, n, m, difficultCoefficient):
-        self.n = n
-        self.m = m
+    def __init__(self, n, m, difficultCoefficient, exclude=0):
+        self.n = n + 2
+        self.m = m + 2
         self.difficultCoefficient = difficultCoefficient
         self.diagonalNodes = []
         self.throughNodes = []
+        self.throughEdges = []
+        if exclude:
+            self.excludedNodes = exclude
+        else:
+            self.excludedNodes = []
         # Generate grid
         self.G = nx.grid_2d_graph(self.n, self.m)
 
@@ -51,6 +55,8 @@ class GameMap(object):
         return edgeList
 
     def generate_full_connected_grid(self):
+        # Additional clean
+        self.G = nx.grid_2d_graph(self.n, self.m)
         # Decrease n, m because of start from zero
         nZ = self.n - 1
         mZ = self.m - 1
@@ -67,9 +73,9 @@ class GameMap(object):
         # Add interedges
         for i in xrange(1, nZ):
             for j in xrange(1, mZ):
-                if (j + 2) < self.n:
+                if (j + 2) < (self.m - 2):
                     self.G.add_edge((i, j), (i, j + 2))
-                if (i + 2) < self.m:
+                if (i + 2) < (self.n - 2):
                     self.G.add_edge((i, j), (i + 2, j))
                 if (j - 2) >= 0:
                     self.G.add_edge((i, j), (i, j - 2))
@@ -90,6 +96,9 @@ class GameMap(object):
         self.G.remove_node((nZ, 0))
         self.G.remove_node((nZ, mZ))
 
+        # Remove excluded(bondary) edges
+        for node in self.excludedNodes:
+            self.G.remove_edges_from(self.G.edges(node))
         return 1
 
     def find_tile_for_network_remade(self, node, degreePosible=None):
@@ -144,9 +153,11 @@ class GameMap(object):
             edge5 = ((i, j + 1), (i, j - 1))
             edge6 = ((i - 1, j), (i + 1, j))
 
-            if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge4) and self.check_edge_in_edgelist(edge5):
+            if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge4) and self.check_edge_in_edgelist(
+                    edge5):
                 return 5
-            elif self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(edge6):
+            elif self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(
+                    edge3) and self.check_edge_in_edgelist(edge6):
                 return 5
             else:
                 return -1
@@ -157,13 +168,17 @@ class GameMap(object):
             edge3 = ((i, j), (i, j + 1))
             edge4 = ((i, j), (i - 1, j))
 
-            if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge3):
+            if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(
+                    edge3):
                 return 2
-            elif self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge4):
+            elif self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(
+                    edge2) and self.check_edge_in_edgelist(edge4):
                 return 2
-            elif self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(edge4):
+            elif self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(
+                    edge3) and self.check_edge_in_edgelist(edge4):
                 return 2
-            elif self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(edge4):
+            elif self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(
+                    edge3) and self.check_edge_in_edgelist(edge4):
                 return 2
             else:
                 return -1
@@ -173,7 +188,8 @@ class GameMap(object):
             edge3 = ((i, j), (i, j + 1))
             edge4 = ((i, j), (i - 1, j))
 
-            if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(edge4):
+            if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(
+                    edge3) and self.check_edge_in_edgelist(edge4):
                 return 4
             else:
                 return -1
@@ -186,7 +202,8 @@ class GameMap(object):
             nodeS = edge[0]
             nodeE = edge[1]
             if abs(nodeS[0] - nodeE[0]) == 1 and abs(nodeS[1] - nodeE[1]) == 1:
-                if (nodeS[0] + 1 == nodeE[0] and nodeS[1] + 1 == nodeE[1]) or (nodeS[0] - 1 == nodeE[0] and nodeS[1] - 1 == nodeE[1]):
+                if (nodeS[0] + 1 == nodeE[0] and nodeS[1] + 1 == nodeE[1]) or (
+                                    nodeS[0] - 1 == nodeE[0] and nodeS[1] - 1 == nodeE[1]):
                     simmetricEdge = (
                         (nodeS[0] - 1, nodeS[1] + 1), (nodeE[0] - 1, nodeE[1] + 1))
                     simmetricEdge2 = (
@@ -328,8 +345,9 @@ class GameMap(object):
 
         elif nodeDegree == 0:
             # tile = random.randint(1, 2)
+
             tile = 1
-            if tile == 1:
+            if tile == 1 and (len(edgePosList) - 1) > -1:
                 edgeExist = edgePosList[
                     random.randint(0, len(edgePosList) - 1)]
                 self.G.add_edge(*edgeExist)
@@ -374,6 +392,57 @@ class GameMap(object):
                 self.G.add_edge(*edge)
             else:
                 print 'Error: ' + str(node) + ' with degree ' + str(nodeDegree)
+        elif self.G.degree(node) == 1:
+            print edgePosList
+
+        return 1
+
+
+    def add_edges_breakNode(self, node):
+        def find_simetric_edge(edgeExist):
+            if edgeExist[0] != node:
+                nodeE = edgeExist[0]
+            else:
+                nodeE = edgeExist[1]
+            if nodeE[0] - node[0] == 0:
+                symetricEdge = (
+                    node, (node[0], node[1] - (nodeE[1] - node[1])))
+            else:
+                symetricEdge = (
+                    node, (node[0] - (nodeE[0] - node[0]), node[1]))
+            return symetricEdge
+
+        nodeDegree = self.get_simple_degree(node)
+        edgePosList = [(node, (node[0], node[1] + 1)), (node, (node[0] + 1, node[1])), (
+            node, (node[0], node[1] - 1)), (node, (node[0] - 1, node[1]))]
+        if self.throughNodes:
+            for nodeThrough in self.throughNodes:
+                # print nodeDiagonal, self.check_node_in_edgelist(nodeDiagonal,
+                # edgePosList)
+                while self.check_node_in_edgelist(nodeThrough, edgePosList):
+                    edgePosList.remove(
+                        self.check_node_in_edgelist(nodeThrough, edgePosList))
+
+        if nodeDegree == 1 and (self.G.degree(node) == 1 or self.G.degree(node) == 0):
+            edgeExist = self.get_simple_edges(node)[0]
+            if edgeExist in edgePosList:
+                edgePosList.remove(edgeExist)
+            if find_simetric_edge(edgeExist) in edgePosList:
+                edgePosList.remove(find_simetric_edge(edgeExist))
+            if edgePosList:
+                edge = edgePosList[random.randint(0, len(edgePosList) - 1)]
+                self.G.add_edge(*edge)
+
+        elif nodeDegree == 2 and self.G.degree(node) == 2:
+            edgeExist = self.get_simple_edges(node)
+            for edge in edgeExist:
+                try:
+                    edgePosList.remove(edge)
+                except:
+                    pass
+            if edgePosList:
+                edge = edgePosList[random.randint(0, len(edgePosList) - 1)]
+                self.G.add_edge(*edge)
 
         return 1
 
@@ -384,28 +453,25 @@ class GameMap(object):
         # Add missing edges for tiles
         repeatTilefind = 0
         allTilesExist = False
+        fallBackNode = []
         while not allTilesExist:
             allTilesExist = True
             for i in range(1, self.n - 1):
                 for j in range(1, self.m - 1):
                     node = (i, j)
-                    while (self.find_tile_for_network_remade(node) == -1) and repeatTilefind<5:
-                        allTilesExist = False
-                        self.randomize_add_edges(node)
-                        repeatTilefind = repeatTilefind + 1
-                    if self.find_tile_for_network_remade(node) == -1:
-                        sys.exit("Can`t made network. Please run script one more time.")
+                    if node not in self.excludedNodes:
+                        while (self.find_tile_for_network_remade(node) == -1) and repeatTilefind < 5:
+                            allTilesExist = False
+                            self.randomize_add_edges(node)
+                            repeatTilefind = repeatTilefind + 1
+                        if self.find_tile_for_network_remade(node) == -1:
+                            fallBackNode.append(node)
+        fallBackNode = list(set(fallBackNode))
+        for breakNode in fallBackNode:
+            self.add_edges_breakNode(breakNode)
 
-        # Find tiles
-        self.get_final_tiles()
-
-        # for i in range(1, self.n - 1):
-        #     for j in range(1, self.m - 1):
-        #         node = (i, j)
-        #         print node, self.find_tile_for_network_remade(node)
-                # if not self.find_tile(node):
-                    # print 'Maybe ' + str(self.find_tile(node, self.get_simple_degree(node) - 1))
-                    # self.remade_network(node)
+        # Additional remade
+        self.remade_for_difficult_tile()
 
         return 1
 
@@ -437,7 +503,7 @@ class GameMap(object):
 
                 if firstVariantCheck or secondVariantCheck:
                     tileCount = tileCount + 1
-                    if tileCount >  int(round(((self.n-2)*(self.m-2))/4.5)):
+                    if tileCount > int(round(((self.n - 2) * (self.m - 2)) / 4.5)):
                         if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2):
                             self.G.remove_edge(*edge)
                             self.G.remove_edge(*edge2)
@@ -484,7 +550,7 @@ class GameMap(object):
 
                 if firstVariantCheck or secondVariantCheck:
                     tileCount = tileCount + 1
-                    if tileCount > int(round(((self.n-2)*(self.m-2))/9)):
+                    if tileCount > int(round(((self.n - 2) * (self.m - 2)) / 9)):
                         if firstVariantCheck:
                             self.G.remove_edge(*edge3)
                         elif secondVariantCheck:
@@ -495,10 +561,12 @@ class GameMap(object):
                             edgesRestore.append(edge)
                             edgesRestore.append(edge2)
                             edgesRestore.append(edge3)
+                            self.throughEdges.append(edge3)
                         else:
                             edgesRestore.append(edge4)
                             edgesRestore.append(edge5)
                             edgesRestore.append(edge6)
+                            self.throughEdges.append(edge6)
                         for edgeNode in self.G.edges(node):
                             self.G.remove_edge(*edgeNode)
 
@@ -506,54 +574,78 @@ class GameMap(object):
             self.G.add_edge(*edgeR)
 
         return 1
-    # def remade_network_by_degree(self):
-    #     for node in self.G.nodes():
-    #         if self.G.degree(node) > 4:
-    #             edgeNumber = random.randint(2, 4)
-    #             while len(self.G.edges(node)) > edgeNumber:
-    #                 index = random.randint(0, len(self.G.edges(node)) - 1)
-    #                 edge = self.G.edges(node)[index]
-    #                 self.G.remove_edge(*edge)
 
-    #     return 1
 
-    def get_final_tiles(self):
-        for i in range(1, self.n - 1):
-            for j in range(1, self.m - 1):
-                node = (i, j)
-                if node in self.throughNodes:
-                    print str(node) + ' - tile 5'
-                elif node in self.diagonalNodes:
-                    print str(node) + ' - tile 3'
-                elif self.G.degree(node) == 2:
-                    print str(node) + ' - tile 1'
-                elif self.G.degree(node) == 3:
-                    print str(node) + ' - tile 2'
-                elif self.G.degree(node) == 4:
-                    print str(node) + ' - tile 4'
+    def get_final_tiles(self, output=True):
+        tiles = []
 
+        if output:
+            for i in range(1, self.n - 1):
+                for j in range(1, self.m - 1):
+                    node = (i, j)
+                    if node in self.throughNodes:
+                        print str(node) + ' - tile 5'
+                    elif node in self.diagonalNodes:
+                        print str(node) + ' - tile 3'
+                    elif self.G.degree(node) == 2:
+                        print str(node) + ' - tile 1'
+                    elif self.G.degree(node) == 3:
+                        print str(node) + ' - tile 2'
+                    elif self.G.degree(node) == 4:
+                        print str(node) + ' - tile 4'
+        else:
+            for i in range(1, self.n - 1):
+                for j in range(1, self.m - 1):
+                    node = (i, j)
+                    if node in self.throughNodes:
+                        tiles.append(5)
+                    elif node in self.diagonalNodes:
+                        tiles.append(3)
+                    elif self.G.degree(node) == 2:
+                        tiles.append(1)
+                    elif self.G.degree(node) == 3:
+                        tiles.append(2)
+                    elif self.G.degree(node) == 4:
+                        tiles.append(4)
+
+        return tiles
+
+    def check_excluded(self):
+        for node in self.excludedNodes:
+            if self.G.degree(node) > 1:
+                return 0
         return 1
 
-    def remade_network(self, node):
-        pass
 
-    def get_playable_subgraph(self):
-        # Generate node list for subraph
-        mapNodes = []
-        for i in range(1, self.n - 1):
-            for j in range(1, self.m - 1):
-                mapNodes.append((i, j))
+    def get_conected_tasks(self, output=True):
 
-        # Check if subgraph is connected
-        mapgraph = self.G.subgraph(mapNodes)
+        # Get boundaties
+        boundaries = []
+        for i in range(self.n - 1):
+            boundaries.append((i, 0))
+            boundaries.append((i, self.m - 1))
+        for j in range(self.m - 1):
+            boundaries.append((0, j))
+            boundaries.append((self.n - 1, j))
+        boundaries.extend(self.excludedNodes)
 
-        return mapgraph
+        # Connected components
+        components = nx.connected_components(self.G)
 
-    def check_connectivity(self):
+        # Intersection of 2 lists
+        tasks = [filter(lambda x: x in boundaries, sublist) for sublist in components]
 
-        connect = nx.is_connected(self.get_playable_subgraph())
-        connect = 1
-        return connect
+        #Remove unuseful task
+        tasks = [x for x in tasks if x != [] and len(x) > 1]
+        if output:
+            for task in tasks:
+                print 'Task: ' + str(task)
+
+        return tasks
+
+    def calculate_difficulty(self):
+
+        print "Difficulty: " + str(nx.degree_assortativity_coefficient(self.G))
 
     def output_graph(self):
         # Graph layout
@@ -562,20 +654,31 @@ class GameMap(object):
             pos[n] = (n[0], n[1])
 
         # Generate graph image
-        nx.draw(self.G, pos)
+        edgesWithoutThrough = self.G.edges()
+        for edge in self.throughEdges:
+            try:
+                edgesWithoutThrough.remove(edge)
+            except:
+                pass
+        nx.draw_networkx(self.G, pos, edgelist=edgesWithoutThrough)
+        nx.draw_networkx(self.G, pos, nodelist=None, edgelist=self.throughEdges, width=2, alpha=0.4, edge_color='b')
         plt.show()
 
         return 1
 
     def make_map(self):
-        connectFlag = False
-        while not connectFlag:
+        check = False
+        while not check:
             self.generate_full_connected_grid()
             self.randomize_removing_edges()
             self.remade_network_by_tile()
-            connectFlag = self.check_connectivity()
+            check = self.check_excluded()
+        self.get_final_tiles()
+        self.get_conected_tasks()
+        self.calculate_difficulty()
         self.output_graph()
 
 
-map = GameMap(5, 5, 0.5)
+exclude = [(2, 4), (2, 3), (3, 3)]
+map = GameMap(3, 3, 0.5)
 map.make_map()
