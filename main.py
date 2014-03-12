@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 class GameMap(object):
     """Game map generating class"""
 
-    def __init__(self, n, m, difficultCoefficient, exclude=0, allTileTypes = False):
+    def __init__(self, n, m, difficultCoefficient, exclude=0, allTileTypes=False):
         self.n = n + 2
         self.m = m + 2
         self.difficultCoefficient = difficultCoefficient
@@ -438,9 +438,10 @@ class GameMap(object):
             edgeExist = self.get_simple_edges(node)
             for edge in edgeExist:
                 try:
-                    edgePosList.remove(edge)
+                    edgePosList.remove((edge[0],edge[1]))
                 except:
-                    pass
+                    print 'Pass 1'
+                    edgePosList.remove((edge[1],edge[0]))
             if edgePosList:
                 edge = edgePosList[random.randint(0, len(edgePosList) - 1)]
                 self.G.add_edge(*edge)
@@ -467,12 +468,17 @@ class GameMap(object):
                             repeatTilefind = repeatTilefind + 1
                         if self.find_tile_for_network_remade(node) == -1:
                             fallBackNode.append(node)
+
+        # Check remade
+        self.throughEdges = []
+        self.throughNodes = []
+        self.diagonalNodes = []
+        self.remade_for_difficult_tile()
+
+        # Remade fallback
         fallBackNode = list(set(fallBackNode))
         for breakNode in fallBackNode:
             self.add_edges_breakNode(breakNode)
-
-        # Additional remade
-        self.remade_for_difficult_tile()
 
         return 1
 
@@ -512,7 +518,8 @@ class GameMap(object):
                             self.G.remove_edge(*edge3)
                             self.G.remove_edge(*edge4)
                     else:
-                        self.diagonalNodes.append(node)
+                        if node not in self.diagonalNodes:
+                            self.diagonalNodes.append(node)
                         if (self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2)):
                             edgesRestore.append(edge)
                             edgesRestore.append(edge2)
@@ -557,17 +564,20 @@ class GameMap(object):
                         elif secondVariantCheck:
                             self.G.remove_edge(*edge6)
                     else:
-                        self.throughNodes.append(node)
+                        if node not in self.throughNodes:
+                            self.throughNodes.append(node)
                         if firstVariantCheck:
                             edgesRestore.append(edge)
                             edgesRestore.append(edge2)
                             edgesRestore.append(edge3)
-                            self.throughEdges.append(edge3)
+                            if edge3 not in self.throughEdges:
+                                self.throughEdges.append(edge3)
                         else:
                             edgesRestore.append(edge4)
                             edgesRestore.append(edge5)
                             edgesRestore.append(edge6)
-                            self.throughEdges.append(edge6)
+                            if edge6 not in self.throughEdges:
+                                self.throughEdges.append(edge6)
                         for edgeNode in self.G.edges(node):
                             self.G.remove_edge(*edgeNode)
 
@@ -662,9 +672,14 @@ class GameMap(object):
         edgesWithoutThrough = self.G.edges()
         for edge in self.throughEdges:
             try:
-                edgesWithoutThrough.remove(edge)
+                edgesWithoutThrough.remove((edge[0], edge[1]))
             except:
                 pass
+            try:
+                edgesWithoutThrough.remove((edge[1], edge[0]))
+            except:
+                pass
+
         nx.draw_networkx(self.G, pos, edgelist=edgesWithoutThrough)
         nx.draw_networkx(self.G, pos, nodelist=None, edgelist=self.throughEdges, width=2, alpha=0.4, edge_color='b')
         plt.show()
@@ -678,9 +693,9 @@ class GameMap(object):
         plist['Tiles'] = [0, 1, 2, 3, 4]
 
         tiles = self.get_final_tiles(output=False)
-        plist['TilesCount'] = dict((str(i),tiles.count(i)) for i in tiles)
+        plist['TilesCount'] = dict((str(i), tiles.count(i)) for i in tiles)
 
-        plist['Solutions'] = [{'Positions':tiles}]
+        plist['Solutions'] = [{'Positions': tiles}]
 
         plistlib.writePlist(plist, 'output.plist')
 
@@ -703,7 +718,9 @@ class GameMap(object):
         self.get_conected_tasks()
         self.export_plist()
         self.output_graph()
+        pass
+
 
 exclude = [(2, 4), (2, 3), (3, 3)]
-map = GameMap(3, 3, 0.2)
+map = GameMap(5, 7, 0.2, exclude=exclude, allTileTypes=False)
 map.make_map()
