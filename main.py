@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 class GameMap(object):
     """Game map generating class"""
 
-    def __init__(self, n, m, difficultCoefficient, exclude=0):
+    def __init__(self, n, m, difficultCoefficient, exclude=0, allTileTypes = False):
         self.n = n + 2
         self.m = m + 2
         self.difficultCoefficient = difficultCoefficient
@@ -18,6 +18,7 @@ class GameMap(object):
             self.excludedNodes = exclude
         else:
             self.excludedNodes = []
+        self.allTileTypes = allTileTypes
         # Generate grid
         self.G = nx.grid_2d_graph(self.n, self.m)
 
@@ -616,6 +617,14 @@ class GameMap(object):
                 return 0
         return 1
 
+    def check_all_tiles_type(self):
+        tiles = self.get_final_tiles(output=False)
+
+        if len(set(tiles)) == 5:
+            return 1
+        else:
+            return 0
+
 
     def get_conected_tasks(self, output=True):
 
@@ -643,10 +652,6 @@ class GameMap(object):
 
         return tasks
 
-    def calculate_difficulty(self):
-
-        print "Difficulty: " + str(nx.degree_assortativity_coefficient(self.G))
-
     def output_graph(self):
         # Graph layout
         pos = {}
@@ -666,19 +671,39 @@ class GameMap(object):
 
         return 1
 
+    def export_plist(self):
+        import plistlib
+
+        plist = dict()
+        plist['Tiles'] = [0, 1, 2, 3, 4]
+
+        tiles = self.get_final_tiles(output=False)
+        plist['TilesCount'] = dict((str(i),tiles.count(i)) for i in tiles)
+
+        plist['Solutions'] = [{'Positions':tiles}]
+
+        plistlib.writePlist(plist, 'output.plist')
+
+        return 1
+
     def make_map(self):
-        check = False
-        while not check:
+        checkExclude = False
+        checkTilesType = False
+        while not (checkTilesType and checkExclude):
             self.generate_full_connected_grid()
             self.randomize_removing_edges()
             self.remade_network_by_tile()
-            check = self.check_excluded()
+            checkExclude = self.check_excluded()
+            if self.allTileTypes:
+                checkTilesType = self.check_all_tiles_type()
+            else:
+                checkTilesType = True
+
         self.get_final_tiles()
         self.get_conected_tasks()
-        self.calculate_difficulty()
+        self.export_plist()
         self.output_graph()
 
-
 exclude = [(2, 4), (2, 3), (3, 3)]
-map = GameMap(3, 3, 0.5)
+map = GameMap(3, 3, 0.2)
 map.make_map()
