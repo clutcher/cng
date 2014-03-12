@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 class GameMap(object):
     """Game map generating class"""
 
-    def __init__(self, n, m, difficultCoefficient, exclude=0, allTileTypes=False):
+    def __init__(self, n, m, difficultCoefficient=0.5, exclude=0, allTileTypes=False):
         self.n = n + 2
         self.m = m + 2
         self.difficultCoefficient = difficultCoefficient
@@ -722,5 +722,5 @@ class GameMap(object):
 
 
 exclude = [(2, 4), (2, 3), (3, 3)]
-map = GameMap(5, 7, 0.2, exclude=exclude, allTileTypes=False)
+map = GameMap(5, 7, difficultCoefficient=0.2, exclude=exclude, allTileTypes=False)
 map.make_map()
