@@ -696,7 +696,7 @@ class GameMap(object):
 
         nx.draw_networkx(self.G, pos, edgelist=edgesWithoutThrough)
         nx.draw_networkx(self.G, pos, nodelist=None, edgelist=self.throughEdges, width=2, alpha=0.4, edge_color='b')
-        plt.show()
+        plt.savefig('graph.png')
 
         return 1
 
@@ -906,7 +906,7 @@ class GameMap(object):
         self.get_conected_tasks()
         self.export_plist()
         self.output_image()
-        # self.output_graph()
+        self.output_graph()
 
 
 # exclude = [(2, 4), (2, 3), (3, 3)]
