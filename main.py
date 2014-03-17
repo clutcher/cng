@@ -587,7 +587,7 @@ class GameMap(object):
         return 1
 
 
-    def get_final_tiles(self, output=True):
+    def get_final_tiles(self, nodeCheck=0, output=True):
         tiles = []
 
         if output:
@@ -604,6 +604,20 @@ class GameMap(object):
                         print str(node) + ' - tile 2'
                     elif self.G.degree(node) == 4:
                         print str(node) + ' - tile 4'
+        elif nodeCheck:
+            node = nodeCheck
+            if node in self.throughNodes:
+                tiles.append(5)
+            elif node in self.diagonalNodes:
+                tiles.append(3)
+            elif self.G.degree(node) == 2:
+                tiles.append(1)
+            elif self.G.degree(node) == 3:
+                tiles.append(2)
+            elif self.G.degree(node) == 4:
+                tiles.append(4)
+            else:
+                tiles.append(-1)
         else:
             for i in range(1, self.n - 1):
                 for j in range(1, self.m - 1):
@@ -686,6 +700,180 @@ class GameMap(object):
 
         return 1
 
+    def output_image(self):
+        import Image
+
+        def add_edges_to_diagonal_and_through_for_recognition():
+            for node in self.diagonalNodes:
+                i = node[0]
+                j = node[1]
+
+                edge = ((i, j), (i + 1, j))
+                edge2 = ((i, j), (i, j - 1))
+                edge3 = ((i, j), (i, j + 1))
+                edge4 = ((i, j), (i - 1, j))
+
+                self.G.add_edge(*edge)
+                self.G.add_edge(*edge2)
+                self.G.add_edge(*edge3)
+                self.G.add_edge(*edge4)
+
+            for node in self.throughNodes:
+                i = node[0]
+                j = node[1]
+
+                edge = ((i, j), (i + 1, j))
+                edge2 = ((i, j), (i, j - 1))
+                edge3 = ((i, j), (i, j + 1))
+                edge4 = ((i, j), (i - 1, j))
+
+                self.G.add_edge(*edge)
+                self.G.add_edge(*edge2)
+                self.G.add_edge(*edge3)
+                self.G.add_edge(*edge4)
+
+            return 0
+
+        def clean_added_edges():
+            for node in self.diagonalNodes:
+                edges = self.G.edges(node)
+
+                for edge in edges:
+                    self.G.remove_edge(*edge)
+
+            for node in self.throughNodes:
+                i = node[0]
+                j = node[1]
+
+                edge = ((i, j), (i + 1, j))
+                edge2 = ((i, j), (i - 1, j))
+                edge3 = ((i, j + 1), (i, j - 1))
+
+                edge4 = ((i, j), (i, j - 1))
+                edge5 = ((i, j), (i, j + 1))
+                edge6 = ((i - 1, j), (i + 1, j))
+
+                firstVariantCheck = self.check_edge_in_edgelist(
+                    edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge3)
+                secondVariantCheck = self.check_edge_in_edgelist(
+                    edge4) and self.check_edge_in_edgelist(edge5) and self.check_edge_in_edgelist(edge6)
+
+                if firstVariantCheck:
+                    self.G.remove_edge(*edge4)
+                    self.G.remove_edge(*edge5)
+                elif secondVariantCheck:
+                    self.G.remove_edge(*edge)
+                    self.G.remove_edge(*edge2)
+
+            return 0
+
+        def get_rotation(node):
+            i = node[0]
+            j = node[1]
+
+            tile = self.get_final_tiles(nodeCheck=node, output=False)
+
+            edge = ((i, j), (i + 1, j))
+            edge2 = ((i, j), (i, j - 1))
+            edge3 = ((i, j), (i, j + 1))
+            edge4 = ((i, j), (i - 1, j))
+
+            angle = 0
+            if tile[0] == 1:
+                add_edges_to_diagonal_and_through_for_recognition()
+                if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2):
+                    angle = 0
+                elif self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge3):
+                    angle = 90
+                elif self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(edge4):
+                    angle = 180
+                elif self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge4):
+                    angle = 270
+
+                clean_added_edges()
+                return angle
+
+            elif tile[0] == 2:
+                add_edges_to_diagonal_and_through_for_recognition()
+                if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(
+                        edge2) and self.check_edge_in_edgelist(
+                        edge3):
+                    angle = 90
+                elif self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(
+                        edge2) and self.check_edge_in_edgelist(edge4):
+                    angle = 0
+                elif self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(
+                        edge3) and self.check_edge_in_edgelist(edge4):
+                    angle = 180
+                elif self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(
+                        edge3) and self.check_edge_in_edgelist(edge4):
+                    angle = 270
+
+                clean_added_edges()
+                return angle
+
+            elif tile[0] == 3:
+                edge3 = ((i - 1, j), (i, j - 1))
+                edge4 = ((i, j + 1), (i + 1, j))
+
+                secondVariantCheck = self.check_edge_in_edgelist(
+                    edge3) and self.check_edge_in_edgelist(edge4)
+
+                if secondVariantCheck:
+                    angle = 90
+            elif tile[0] == 5:
+                edge = ((i, j), (i + 1, j))
+                edge2 = ((i, j), (i - 1, j))
+                edge3 = ((i, j + 1), (i, j - 1))
+
+                firstVariantCheck = self.check_edge_in_edgelist(
+                    edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge3)
+                if firstVariantCheck:
+                    angle = 90
+
+            return angle
+
+
+        result = Image.new('RGBA', (self.n * 170, self.m * 170))
+
+        task = Image.open('tiles/task.png')
+        zero = Image.open('tiles/0.png')
+        one = Image.open('tiles/1.png')
+        two = Image.open('tiles/2.png')
+        three = Image.open('tiles/3.png')
+        four = Image.open('tiles/4.png')
+        five = Image.open('tiles/5.png')
+
+        for i in (xrange(self.n)):
+            for j in (xrange(self.m)):
+                node = (i, j)
+
+                width = i * 170
+                height = (self.n - j - 1) * 170
+
+                tiles = self.get_final_tiles(nodeCheck=node, output=False)
+
+                if tiles[0] == 0:
+                    result.paste(zero, (width, height))
+                elif tiles[0] == 1:
+                    result.paste(one.rotate(get_rotation(node)), (width, height))
+                elif tiles[0] == 2:
+                    result.paste(two.rotate(get_rotation(node)), (width, height))
+                elif tiles[0] == 3:
+                    result.paste(three.rotate(get_rotation(node)), (width, height))
+                elif tiles[0] == 4:
+                    result.paste(four, (width, height))
+                elif tiles[0] == 5:
+                    result.paste(five.rotate(get_rotation(node)), (width, height))
+                elif self.G.degree(node) == 0:
+                    result.paste(zero, (width, height))
+                elif node not in self.G.nodes():
+                    result.paste(zero, (width, height))
+                else:
+                    result.paste(task, (width, height))
+        result.save('tile.png', 'PNG')
+        pass
+
     def export_plist(self):
         import plistlib
 
@@ -717,10 +905,26 @@ class GameMap(object):
         self.get_final_tiles()
         self.get_conected_tasks()
         self.export_plist()
-        self.output_graph()
-        pass
+        self.output_image()
+        # self.output_graph()
 
 
-exclude = [(2, 4), (2, 3), (3, 3)]
-map = GameMap(5, 7, difficultCoefficient=0.2, exclude=exclude, allTileTypes=False)
+# exclude = [(2, 4), (2, 3), (3, 3)]
+exclude = []
+# for i in xrange(6, 9):
+#     for j in xrange(1, 6):
+#         node = (i, j)
+#         exclude.append(node)
+#
+# for i in xrange(1, 3):
+#     for j in xrange(6, 11):
+#         node = (i, j)
+#         exclude.append(node)
+#
+# triangleLeft = [(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (3, 1)]
+# triangleRight = [(8,10), (8,9), (8,8), (7, 10), (7, 9), (6, 10)]
+# exclude.extend(triangleLeft)
+# exclude.extend(triangleRight)
+
+map = GameMap(3, 3, difficultCoefficient=0.2, exclude=exclude, allTileTypes=True)
 map.make_map()
