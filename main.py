@@ -835,14 +835,19 @@ class GameMap(object):
 
 
         result = Image.new('RGBA', (self.n * 170, self.m * 170))
+        
+        import os
 
-        task = Image.open('tiles/task.png')
-        zero = Image.open('tiles/0.png')
-        one = Image.open('tiles/1.png')
-        two = Image.open('tiles/2.png')
-        three = Image.open('tiles/3.png')
-        four = Image.open('tiles/4.png')
-        five = Image.open('tiles/5.png')
+        scriptDir = os.path.dirname(__file__)
+        impath = os.path.join(scriptDir, 'tiles/task.png')
+        print impath
+        task = Image.open(os.path.join(scriptDir, 'tiles/task.png'))
+        zero = Image.open(os.path.join(scriptDir, 'tiles/0.png'))
+        one = Image.open(os.path.join(scriptDir, 'tiles/1.png'))
+        two = Image.open(os.path.join(scriptDir, 'tiles/2.png'))
+        three = Image.open(os.path.join(scriptDir, 'tiles/3.png'))
+        four = Image.open(os.path.join(scriptDir, 'tiles/4.png'))
+        five = Image.open(os.path.join(scriptDir, 'tiles/5.png'))
 
         for i in (xrange(self.n)):
             for j in (xrange(self.m)):
