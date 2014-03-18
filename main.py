@@ -877,7 +877,8 @@ class GameMap(object):
                 else:
                     result.paste(task, (width, height))
         result.show()
-        result.save('tile.png', 'PNG')
+        open(os.path.join(scriptDir, 'tile.png'), 'r')
+        result.save(os.path.join(scriptDir, 'tile.png'), 'PNG')
         pass
 
     def export_plist(self):
