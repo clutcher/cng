@@ -835,7 +835,7 @@ class GameMap(object):
 
 
         result = Image.new('RGBA', (self.n * 170, self.m * 170))
-        
+
         import os
 
         scriptDir = os.path.dirname(__file__)
@@ -876,6 +876,7 @@ class GameMap(object):
                     result.paste(zero, (width, height))
                 else:
                     result.paste(task, (width, height))
+        result.show()
         result.save('tile.png', 'PNG')
         pass
 
