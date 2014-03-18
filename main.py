@@ -105,7 +105,7 @@ class GameMap(object):
     def find_tile_for_network_remade(self, node, degreePosible=None):
         i = node[0]
         j = node[1]
-
+        self.clean_added_edges()
         if degreePosible:
             degree = degreePosible
         else:
@@ -423,8 +423,23 @@ class GameMap(object):
                 while self.check_node_in_edgelist(nodeThrough, edgePosList):
                     edgePosList.remove(
                         self.check_node_in_edgelist(nodeThrough, edgePosList))
+        if nodeDegree == 0:
+            i = node[0]
+            j = node[1]
 
-        if nodeDegree == 1 and (self.G.degree(node) == 1 or self.G.degree(node) == 0):
+            edge = ((i, j), (i + 1, j))
+            edge2 = ((i, j), (i, j - 1))
+            edge3 = ((i, j), (i, j + 1))
+            edge4 = ((i, j), (i - 1, j))
+
+            self.G.add_edge(*edge)
+            self.G.add_edge(*edge2)
+            self.G.add_edge(*edge3)
+            self.G.add_edge(*edge4)
+
+            self.clean_added_edges()
+
+        if nodeDegree == 1 and (self.G.degree(node) == 1 or self.G.degree(node) == 0 or self.G.degree(node) == 2):
             edgeExist = self.get_simple_edges(node)[0]
             if edgeExist in edgePosList:
                 edgePosList.remove(edgeExist)
@@ -440,8 +455,11 @@ class GameMap(object):
                 try:
                     edgePosList.remove((edge[0],edge[1]))
                 except:
-                    print 'Pass 1'
+                    pass
+                try:
                     edgePosList.remove((edge[1],edge[0]))
+                except:
+                    pass
             if edgePosList:
                 edge = edgePosList[random.randint(0, len(edgePosList) - 1)]
                 self.G.add_edge(*edge)
@@ -455,6 +473,8 @@ class GameMap(object):
         # Add missing edges for tiles
         repeatTilefind = 0
         allTilesExist = False
+
+        # while True:
         fallBackNode = []
         while not allTilesExist:
             allTilesExist = True
@@ -477,6 +497,9 @@ class GameMap(object):
 
         # Remade fallback
         fallBackNode = list(set(fallBackNode))
+        # if fallBackNode == []:
+        #     break
+        # else:
         for breakNode in fallBackNode:
             self.add_edges_breakNode(breakNode)
 
@@ -622,7 +645,10 @@ class GameMap(object):
             edges = self.G.edges(node)
 
             for edge in edges:
-                self.G.remove_edge(*edge)
+                try:
+                    self.G.remove_edge(*edge)
+                except:
+                    pass
 
         for node in self.throughNodes:
             i = node[0]
@@ -641,12 +667,15 @@ class GameMap(object):
             secondVariantCheck = self.check_edge_in_edgelist(
                 edge4) and self.check_edge_in_edgelist(edge5) and self.check_edge_in_edgelist(edge6)
 
-            if firstVariantCheck:
-                self.G.remove_edge(*edge4)
-                self.G.remove_edge(*edge5)
-            elif secondVariantCheck:
-                self.G.remove_edge(*edge)
-                self.G.remove_edge(*edge2)
+            try:
+                if firstVariantCheck:
+                    self.G.remove_edge(*edge4)
+                    self.G.remove_edge(*edge5)
+                elif secondVariantCheck:
+                    self.G.remove_edge(*edge)
+                    self.G.remove_edge(*edge2)
+            except:
+                pass
 
         return 0
 
