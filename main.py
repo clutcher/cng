@@ -925,20 +925,20 @@ class GameMap(object):
 
 # exclude = [(2, 4), (2, 3), (3, 3)]
 exclude = []
-# for i in xrange(6, 9):
-#     for j in xrange(1, 6):
-#         node = (i, j)
-#         exclude.append(node)
-#
-# for i in xrange(1, 3):
-#     for j in xrange(6, 11):
-#         node = (i, j)
-#         exclude.append(node)
-#
-# triangleLeft = [(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (3, 1)]
-# triangleRight = [(8, 10), (8, 9), (8, 8), (7, 10), (7, 9), (6, 10)]
-# exclude.extend(triangleLeft)
-# exclude.extend(triangleRight)
+for i in xrange(6, 9):
+    for j in xrange(1, 6):
+        node = (i, j)
+        exclude.append(node)
 
-map = GameMap(5, 5, difficultCoefficient=0.2, exclude=exclude, allTileTypes=True)
+for i in xrange(1, 4):
+    for j in xrange(6, 11):
+        node = (i, j)
+        exclude.append(node)
+
+triangleLeft = [(1, 1), (1, 2), (1, 3), (1, 4), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2), (4, 1)]
+triangleRight = [(8, 10), (8, 9), (8, 8), (8, 7), (7, 10), (7, 9), (7, 8), (6, 10), (6, 9), (5, 10)]
+exclude.extend(triangleLeft)
+exclude.extend(triangleRight)
+
+map = GameMap(8, 10, difficultCoefficient=0.2, exclude=exclude, allTileTypes=True)
 map.make_map()
