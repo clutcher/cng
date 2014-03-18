@@ -878,7 +878,7 @@ class GameMap(object):
                     result.paste(task, (width, height))
         result.format = "PNG"
         result.show()
-        open(os.path.join(scriptDir, 'tile.png'), 'r')
+        open(os.path.join(scriptDir, 'tile.png'), 'w')
         result.save(os.path.join(scriptDir, 'tile.png'), 'PNG')
         pass
 
