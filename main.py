@@ -696,6 +696,10 @@ class GameMap(object):
 
         nx.draw_networkx(self.G, pos, edgelist=edgesWithoutThrough)
         nx.draw_networkx(self.G, pos, nodelist=None, edgelist=self.throughEdges, width=2, alpha=0.4, edge_color='b')
+        import os
+
+        scriptDir = os.path.dirname(__file__)
+        open(os.path.join(scriptDir, 'graph.png'), 'w')
         plt.savefig('graph.png')
 
         return 1
@@ -834,13 +838,12 @@ class GameMap(object):
             return angle
 
 
-        result = Image.new('RGBA', (self.n * 170, self.m * 170))
+        result = Image.new('RGB', (self.n * 170, self.m * 170))
 
         import os
 
         scriptDir = os.path.dirname(__file__)
-        impath = os.path.join(scriptDir, 'tiles/task.png')
-        print impath
+
         task = Image.open(os.path.join(scriptDir, 'tiles/task.png'))
         zero = Image.open(os.path.join(scriptDir, 'tiles/0.png'))
         one = Image.open(os.path.join(scriptDir, 'tiles/1.png'))
@@ -854,7 +857,7 @@ class GameMap(object):
                 node = (i, j)
 
                 width = i * 170
-                height = (self.n - j - 1) * 170
+                height = (self.m - j - 1) * 170
 
                 tiles = self.get_final_tiles(nodeCheck=node, output=False)
 
@@ -876,9 +879,9 @@ class GameMap(object):
                     result.paste(zero, (width, height))
                 else:
                     result.paste(task, (width, height))
-        result.format = "PNG"
-        result.show()
-        open(os.path.join(scriptDir, 'tile.png'), 'w')
+        # result.format = "PNG"
+        # result.show()
+        # open(os.path.join(scriptDir, 'tile.png'), 'w')
         result.save(os.path.join(scriptDir, 'tile.png'), 'PNG')
         pass
 
@@ -928,9 +931,9 @@ exclude = []
 #     for j in xrange(6, 11):
 #         node = (i, j)
 #         exclude.append(node)
-#
+
 # triangleLeft = [(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (3, 1)]
-# triangleRight = [(8,10), (8,9), (8,8), (7, 10), (7, 9), (6, 10)]
+# triangleRight = [(8, 10), (8, 9), (8, 8), (7, 10), (7, 9), (6, 10)]
 # exclude.extend(triangleLeft)
 # exclude.extend(triangleRight)
 
