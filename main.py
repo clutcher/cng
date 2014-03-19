@@ -513,44 +513,45 @@ class GameMap(object):
         for i in range(1, self.n - 1):
             for j in range(1, self.m - 1):
                 node = (i, j)
-                edge = ((i - 1, j), (i, j + 1))
-                edge2 = ((i, j - 1), (i + 1, j))
-                edge3 = ((i - 1, j), (i, j - 1))
-                edge4 = ((i, j + 1), (i + 1, j))
+                if node not in self.excludedNodes:
+                    edge = ((i - 1, j), (i, j + 1))
+                    edge2 = ((i, j - 1), (i + 1, j))
+                    edge3 = ((i - 1, j), (i, j - 1))
+                    edge4 = ((i, j + 1), (i + 1, j))
 
-                firstVariantCheck = self.check_edge_in_edgelist(
-                    edge) and self.check_edge_in_edgelist(edge2)
-                secondVariantCheck = self.check_edge_in_edgelist(
-                    edge3) and self.check_edge_in_edgelist(edge4)
+                    firstVariantCheck = self.check_edge_in_edgelist(
+                        edge) and self.check_edge_in_edgelist(edge2)
+                    secondVariantCheck = self.check_edge_in_edgelist(
+                        edge3) and self.check_edge_in_edgelist(edge4)
 
-                if firstVariantCheck and secondVariantCheck:
-                    if random.randint(1, 2) == 1:
-                        self.G.remove_edge(*edge)
-                        self.G.remove_edge(*edge2)
-                    else:
-                        self.G.remove_edge(*edge3)
-                        self.G.remove_edge(*edge4)
-
-                if firstVariantCheck or secondVariantCheck:
-                    tileCount = tileCount + 1
-                    if tileCount > int(round(((self.n - 2) * (self.m - 2)) / 4.5)):
-                        if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2):
+                    if firstVariantCheck and secondVariantCheck:
+                        if random.randint(1, 2) == 1:
                             self.G.remove_edge(*edge)
                             self.G.remove_edge(*edge2)
-                        elif self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(edge4):
+                        else:
                             self.G.remove_edge(*edge3)
                             self.G.remove_edge(*edge4)
-                    else:
-                        if node not in self.diagonalNodes:
-                            self.diagonalNodes.append(node)
-                        if (self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2)):
-                            edgesRestore.append(edge)
-                            edgesRestore.append(edge2)
+
+                    if firstVariantCheck or secondVariantCheck:
+                        tileCount = tileCount + 1
+                        if tileCount > int(round(((self.n - 2) * (self.m - 2)) / 4.5)):
+                            if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2):
+                                self.G.remove_edge(*edge)
+                                self.G.remove_edge(*edge2)
+                            elif self.check_edge_in_edgelist(edge3) and self.check_edge_in_edgelist(edge4):
+                                self.G.remove_edge(*edge3)
+                                self.G.remove_edge(*edge4)
                         else:
-                            edgesRestore.append(edge3)
-                            edgesRestore.append(edge4)
-                        for edgeNode in self.G.edges(node):
-                            self.G.remove_edge(*edgeNode)
+                            if node not in self.diagonalNodes:
+                                self.diagonalNodes.append(node)
+                            if (self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2)):
+                                edgesRestore.append(edge)
+                                edgesRestore.append(edge2)
+                            else:
+                                edgesRestore.append(edge3)
+                                edgesRestore.append(edge4)
+                            for edgeNode in self.G.edges(node):
+                                self.G.remove_edge(*edgeNode)
 
         self.remove_simetric_diagonal_edges()
 
@@ -566,43 +567,44 @@ class GameMap(object):
         for i in range(1, self.n - 1):
             for j in range(1, self.m - 1):
                 node = (i, j)
-                edge = ((i, j), (i + 1, j))
-                edge2 = ((i, j), (i - 1, j))
-                edge3 = ((i, j + 1), (i, j - 1))
+                if node not in self.excludedNodes:
+                    edge = ((i, j), (i + 1, j))
+                    edge2 = ((i, j), (i - 1, j))
+                    edge3 = ((i, j + 1), (i, j - 1))
 
-                edge4 = ((i, j), (i, j - 1))
-                edge5 = ((i, j), (i, j + 1))
-                edge6 = ((i - 1, j), (i + 1, j))
+                    edge4 = ((i, j), (i, j - 1))
+                    edge5 = ((i, j), (i, j + 1))
+                    edge6 = ((i - 1, j), (i + 1, j))
 
-                firstVariantCheck = self.check_edge_in_edgelist(
-                    edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge3)
-                secondVariantCheck = self.check_edge_in_edgelist(
-                    edge4) and self.check_edge_in_edgelist(edge5) and self.check_edge_in_edgelist(edge6)
+                    firstVariantCheck = self.check_edge_in_edgelist(
+                        edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge3)
+                    secondVariantCheck = self.check_edge_in_edgelist(
+                        edge4) and self.check_edge_in_edgelist(edge5) and self.check_edge_in_edgelist(edge6)
 
-                if firstVariantCheck or secondVariantCheck:
-                    tileCount = tileCount + 1
-                    if tileCount > int(round(((self.n - 2) * (self.m - 2)) / 9)):
-                        if firstVariantCheck:
-                            self.G.remove_edge(*edge3)
-                        elif secondVariantCheck:
-                            self.G.remove_edge(*edge6)
-                    else:
-                        if node not in self.throughNodes:
-                            self.throughNodes.append(node)
-                        if firstVariantCheck:
-                            edgesRestore.append(edge)
-                            edgesRestore.append(edge2)
-                            edgesRestore.append(edge3)
-                            if edge3 not in self.throughEdges:
-                                self.throughEdges.append(edge3)
+                    if firstVariantCheck or secondVariantCheck:
+                        tileCount = tileCount + 1
+                        if tileCount > int(round(((self.n - 2) * (self.m - 2)) / 9)):
+                            if firstVariantCheck:
+                                self.G.remove_edge(*edge3)
+                            elif secondVariantCheck:
+                                self.G.remove_edge(*edge6)
                         else:
-                            edgesRestore.append(edge4)
-                            edgesRestore.append(edge5)
-                            edgesRestore.append(edge6)
-                            if edge6 not in self.throughEdges:
-                                self.throughEdges.append(edge6)
-                        for edgeNode in self.G.edges(node):
-                            self.G.remove_edge(*edgeNode)
+                            if node not in self.throughNodes:
+                                self.throughNodes.append(node)
+                            if firstVariantCheck:
+                                edgesRestore.append(edge)
+                                edgesRestore.append(edge2)
+                                edgesRestore.append(edge3)
+                                if edge3 not in self.throughEdges:
+                                    self.throughEdges.append(edge3)
+                            else:
+                                edgesRestore.append(edge4)
+                                edgesRestore.append(edge5)
+                                edgesRestore.append(edge6)
+                                if edge6 not in self.throughEdges:
+                                    self.throughEdges.append(edge6)
+                            for edgeNode in self.G.edges(node):
+                                self.G.remove_edge(*edgeNode)
 
         for edgeR in edgesRestore:
             self.G.add_edge(*edgeR)
@@ -954,20 +956,20 @@ class GameMap(object):
 
 # exclude = [(2, 4), (2, 3), (3, 3)]
 exclude = []
-for i in xrange(6, 9):
-    for j in xrange(1, 6):
-        node = (i, j)
-        exclude.append(node)
-
-for i in xrange(1, 4):
-    for j in xrange(6, 11):
-        node = (i, j)
-        exclude.append(node)
-
-triangleLeft = [(1, 1), (1, 2), (1, 3), (1, 4), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2), (4, 1)]
-triangleRight = [(8, 10), (8, 9), (8, 8), (8, 7), (7, 10), (7, 9), (7, 8), (6, 10), (6, 9), (5, 10)]
-exclude.extend(triangleLeft)
-exclude.extend(triangleRight)
-
-map = GameMap(8, 10, difficultCoefficient=0.2, exclude=exclude, allTileTypes=True)
+# for i in xrange(6, 9):
+#     for j in xrange(1, 6):
+#         node = (i, j)
+#         exclude.append(node)
+#
+# for i in xrange(1, 4):
+#     for j in xrange(6, 11):
+#         node = (i, j)
+#         exclude.append(node)
+#
+# triangleLeft = [(1, 1), (1, 2), (1, 3), (1, 4), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2), (4, 1)]
+# triangleRight = [(8, 10), (8, 9), (8, 8), (8, 7), (7, 10), (7, 9), (7, 8), (6, 10), (6, 9), (5, 10)]
+# exclude.extend(triangleLeft)
+# exclude.extend(triangleRight)
+exclude = [(1, 1), (10, 10), (10, 1), (1, 10)]
+map = GameMap(10, 10, difficultCoefficient=0.6, exclude=exclude, allTileTypes=True)
 map.make_map()
