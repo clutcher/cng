@@ -474,6 +474,9 @@ class GameMap(object):
         repeatTilefind = 0
         allTilesExist = False
 
+        # iRange = sorted(range(1, self.n - 1), key=lambda k: random.random())
+        # jRange = sorted(range(1, self.m - 1), key=lambda k: random.random())
+
         # while True:
         fallBackNode = []
         while not allTilesExist:
@@ -510,8 +513,12 @@ class GameMap(object):
         # Tile 3
         tileCount = 0
         edgesRestore = []
-        for i in range(1, self.n - 1):
-            for j in range(1, self.m - 1):
+
+        iRange = sorted(range(1, self.n - 1), key=lambda k: random.random())
+        jRange = sorted(range(1, self.m - 1), key=lambda k: random.random())
+
+        for i in iRange:
+            for j in jRange:
                 node = (i, j)
                 if node not in self.excludedNodes:
                     edge = ((i - 1, j), (i, j + 1))
@@ -534,7 +541,7 @@ class GameMap(object):
 
                     if firstVariantCheck or secondVariantCheck:
                         tileCount = tileCount + 1
-                        if tileCount > int(round(((self.n - 2) * (self.m - 2)) / 4.5)):
+                        if tileCount > int(round(((self.n - 2) * (self.m - 2)-len(self.excludedNodes)) / 4.5)):
                             if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2):
                                 self.G.remove_edge(*edge)
                                 self.G.remove_edge(*edge2)
@@ -564,8 +571,8 @@ class GameMap(object):
 
         tileCount = 0
         edgesRestore = []
-        for i in range(1, self.n - 1):
-            for j in range(1, self.m - 1):
+        for i in iRange:
+            for j in jRange:
                 node = (i, j)
                 if node not in self.excludedNodes:
                     edge = ((i, j), (i + 1, j))
@@ -583,7 +590,7 @@ class GameMap(object):
 
                     if firstVariantCheck or secondVariantCheck:
                         tileCount = tileCount + 1
-                        if tileCount > int(round(((self.n - 2) * (self.m - 2)) / 9)):
+                        if tileCount > int(round(((self.n - 2) * (self.m - 2)-len(self.excludedNodes)) / 9)):
                             if firstVariantCheck:
                                 self.G.remove_edge(*edge3)
                             elif secondVariantCheck:
@@ -970,6 +977,6 @@ exclude = []
 # triangleRight = [(8, 10), (8, 9), (8, 8), (8, 7), (7, 10), (7, 9), (7, 8), (6, 10), (6, 9), (5, 10)]
 # exclude.extend(triangleLeft)
 # exclude.extend(triangleRight)
-exclude = [(1, 1), (10, 10), (10, 1), (1, 10)]
-map = GameMap(10, 10, difficultCoefficient=0.6, exclude=exclude, allTileTypes=True)
+
+map = GameMap(5, 5, difficultCoefficient=0.9, exclude=exclude, allTileTypes=True)
 map.make_map()
