@@ -7,13 +7,17 @@ import matplotlib.pyplot as plt
 class GameMap(object):
     """Game map generating class"""
 
-    def __init__(self, n, m, difficultCoefficient=0.5, exclude=0, allTileTypes=False):
+    def __init__(self, n, m, difficultCoefficient=0.5, exclude=0, allTileTypes=False, excludeDegree = 0):
         self.n = n + 2
         self.m = m + 2
         self.difficultCoefficient = difficultCoefficient
         self.diagonalNodes = []
         self.throughNodes = []
         self.throughEdges = []
+        if excludeDegree:
+            self.excludeDegree = excludeDegree
+        else:
+            self.excludeDegree = []
         if exclude:
             self.excludedNodes = exclude
         else:
@@ -766,7 +770,10 @@ class GameMap(object):
 
     def check_excluded(self):
         for node in self.excludedNodes:
-            if self.G.degree(node) > 1:
+            if node in self.excludeDegree.keys():
+                if self.G.degree(node) > self.excludeDegree[node]:
+                    return 0
+            elif self.G.degree(node) > 1:
                 return 0
         return 1
 
@@ -1003,5 +1010,10 @@ exclude = []
 # exclude.extend(triangleLeft)
 # exclude.extend(triangleRight)
 
-map = GameMap(5, 5, difficultCoefficient=0.9, exclude=exclude, allTileTypes=True)
+exclude.extend([(3,3), (5,5)])
+excludeNodeWithDegree = {}
+excludeNodeWithDegree[(3,3)] = 4
+excludeNodeWithDegree[(5,5)] = 2
+print excludeNodeWithDegree
+map = GameMap(5, 5, difficultCoefficient=0.9, exclude=exclude, allTileTypes=True, excludeDegree=excludeNodeWithDegree)
 map.make_map()
