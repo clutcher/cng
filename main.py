@@ -520,12 +520,11 @@ class GameMap(object):
         for i in iRange:
             for j in jRange:
                 node = (i, j)
+                edge = ((i - 1, j), (i, j + 1))
+                edge2 = ((i, j - 1), (i + 1, j))
+                edge3 = ((i - 1, j), (i, j - 1))
+                edge4 = ((i, j + 1), (i + 1, j))
                 if node not in self.excludedNodes:
-                    edge = ((i - 1, j), (i, j + 1))
-                    edge2 = ((i, j - 1), (i + 1, j))
-                    edge3 = ((i - 1, j), (i, j - 1))
-                    edge4 = ((i, j + 1), (i + 1, j))
-
                     firstVariantCheck = self.check_edge_in_edgelist(
                         edge) and self.check_edge_in_edgelist(edge2)
                     secondVariantCheck = self.check_edge_in_edgelist(
@@ -559,6 +558,23 @@ class GameMap(object):
                                 edgesRestore.append(edge4)
                             for edgeNode in self.G.edges(node):
                                 self.G.remove_edge(*edgeNode)
+                else:
+                    try:
+                        self.G.remove_edge(*edge)
+                    except:
+                        pass
+                    try:
+                        self.G.remove_edge(*edge2)
+                    except:
+                        pass
+                    try:
+                        self.G.remove_edge(*edge3)
+                    except:
+                        pass
+                    try:
+                        self.G.remove_edge(*edge4)
+                    except:
+                        pass
 
         self.remove_simetric_diagonal_edges()
 
@@ -574,15 +590,15 @@ class GameMap(object):
         for i in iRange:
             for j in jRange:
                 node = (i, j)
+                edge = ((i, j), (i + 1, j))
+                edge2 = ((i, j), (i - 1, j))
+                edge3 = ((i, j + 1), (i, j - 1))
+
+                edge4 = ((i, j), (i, j - 1))
+                edge5 = ((i, j), (i, j + 1))
+                edge6 = ((i - 1, j), (i + 1, j))
+
                 if node not in self.excludedNodes:
-                    edge = ((i, j), (i + 1, j))
-                    edge2 = ((i, j), (i - 1, j))
-                    edge3 = ((i, j + 1), (i, j - 1))
-
-                    edge4 = ((i, j), (i, j - 1))
-                    edge5 = ((i, j), (i, j + 1))
-                    edge6 = ((i - 1, j), (i + 1, j))
-
                     firstVariantCheck = self.check_edge_in_edgelist(
                         edge) and self.check_edge_in_edgelist(edge2) and self.check_edge_in_edgelist(edge3)
                     secondVariantCheck = self.check_edge_in_edgelist(
@@ -612,6 +628,15 @@ class GameMap(object):
                                     self.throughEdges.append(edge6)
                             for edgeNode in self.G.edges(node):
                                 self.G.remove_edge(*edgeNode)
+                else:
+                    try:
+                        self.G.remove_edge(*edge3)
+                    except:
+                        pass
+                    try:
+                        self.G.remove_edge(*edge6)
+                    except:
+                        pass
 
         for edgeR in edgesRestore:
             self.G.add_edge(*edgeR)
