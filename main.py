@@ -14,6 +14,7 @@ class GameMap(object):
         self.diagonalNodes = []
         self.throughNodes = []
         self.throughEdges = []
+        self.taskObjects = {}
         if excludeDegree:
             self.excludeDegree = excludeDegree
         else:
@@ -918,6 +919,7 @@ class GameMap(object):
         scriptDir = os.path.dirname(__file__)
 
         task = Image.open(os.path.join(scriptDir, 'tiles/task.png'))
+        task_object = Image.open(os.path.join(scriptDir, 'tiles/task_object.png'))
         zero = Image.open(os.path.join(scriptDir, 'tiles/0.png'))
         one = Image.open(os.path.join(scriptDir, 'tiles/1.png'))
         two = Image.open(os.path.join(scriptDir, 'tiles/2.png'))
@@ -933,8 +935,17 @@ class GameMap(object):
                 height = (self.m - j - 1) * 170
 
                 tiles = self.get_final_tiles(nodeCheck=node, output=False)
-
-                if tiles[0] == 0:
+                if node in self.excludeDegree:
+                    if tiles[0] == 0:
+                        result.paste(zero, (width, height))
+                    else:
+                        if random.random() >= 0.5:
+                            self.taskObjects[node] = 'a'
+                            result.paste(task, (width, height))
+                        else:
+                            self.taskObjects[node] = 'b'
+                            result.paste(task_object, (width, height))
+                elif tiles[0] == 0:
                     result.paste(zero, (width, height))
                 elif tiles[0] == 1:
                     result.paste(one.rotate(get_rotation(node)), (width, height))
@@ -951,7 +962,12 @@ class GameMap(object):
                 elif node not in self.G.nodes():
                     result.paste(zero, (width, height))
                 else:
-                    result.paste(task, (width, height))
+                    if random.random() >= 0.5:
+                        self.taskObjects[node] = 'a'
+                        result.paste(task, (width, height))
+                    else:
+                        self.taskObjects[node] = 'b'
+                        result.paste(task_object, (width, height))
         # result.format = "PNG"
         # result.show()
         # open(os.path.join(scriptDir, 'tile.png'), 'w')
@@ -991,6 +1007,7 @@ class GameMap(object):
         self.export_plist()
         self.output_image()
         self.output_graph()
+        print self.taskObjects
 
 
 # exclude = [(2, 4), (2, 3), (3, 3)]
@@ -1012,8 +1029,8 @@ exclude = []
 
 exclude.extend([(3,3), (5,5)])
 excludeNodeWithDegree = {}
-excludeNodeWithDegree[(3,3)] = 4
-excludeNodeWithDegree[(5,5)] = 2
+excludeNodeWithDegree[(2, 3)] = 4
+excludeNodeWithDegree[(3, 4)] = 4
 print excludeNodeWithDegree
-map = GameMap(5, 5, difficultCoefficient=0.9, exclude=exclude, allTileTypes=True, excludeDegree=excludeNodeWithDegree)
+map = GameMap(5, 5, difficultCoefficient=0.2, exclude=exclude, allTileTypes=True, excludeDegree=excludeNodeWithDegree)
 map.make_map()
