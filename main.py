@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 class GameMap(object):
     """Game map generating class"""
 
-    def __init__(self, n, m, difficultCoefficient=0.5, exclude=0, allTileTypes=False, excludeDegree = 0):
+    def __init__(self, n, m, difficultCoefficient=0.5, exclude=0, allTileTypes=False, excludeDegree=0):
         self.n = n + 2
         self.m = m + 2
         self.difficultCoefficient = difficultCoefficient
@@ -346,8 +346,8 @@ class GameMap(object):
                 if edgePosList:
                     edge = edgePosList[random.randint(0, len(edgePosList) - 1)]
                     self.G.add_edge(*edge)
-                else:
-                    print 'Error: ' + str(node) + ' with degree ' + str(nodeDegree)
+                    # else:
+                    #     print 'Error: ' + str(node) + ' with degree ' + str(nodeDegree)
 
         elif nodeDegree == 0:
             # tile = random.randint(1, 2)
@@ -364,8 +364,8 @@ class GameMap(object):
                 if edgePosList:
                     edge = edgePosList[random.randint(0, len(edgePosList) - 1)]
                     self.G.add_edge(*edge)
-                else:
-                    print 'Error: ' + str(node) + ' with degree ' + str(nodeDegree)
+                    # else:
+                    #     print 'Error: ' + str(node) + ' with degree ' + str(nodeDegree)
 
         elif nodeDegree == 1:
 
@@ -382,8 +382,8 @@ class GameMap(object):
                 if edgePosList:
                     edge = edgePosList[random.randint(0, len(edgePosList) - 1)]
                     self.G.add_edge(*edge)
-                else:
-                    print 'Error: ' + str(node) + ' with degree ' + str(nodeDegree)
+                    # else:
+                    #     print 'Error: ' + str(node) + ' with degree ' + str(nodeDegree)
         elif nodeDegree == 2:
             edgeExist = self.get_simple_edges(node)[0]
             edgeSymetric = self.get_simple_edges(node)[1]
@@ -396,8 +396,8 @@ class GameMap(object):
             if edgePosList:
                 edge = edgePosList[random.randint(0, len(edgePosList) - 1)]
                 self.G.add_edge(*edge)
-            else:
-                print 'Error: ' + str(node) + ' with degree ' + str(nodeDegree)
+                # else:
+                #     print 'Error: ' + str(node) + ' with degree ' + str(nodeDegree)
         elif self.G.degree(node) == 1:
             print edgePosList
 
@@ -458,11 +458,11 @@ class GameMap(object):
             edgeExist = self.get_simple_edges(node)
             for edge in edgeExist:
                 try:
-                    edgePosList.remove((edge[0],edge[1]))
+                    edgePosList.remove((edge[0], edge[1]))
                 except:
                     pass
                 try:
-                    edgePosList.remove((edge[1],edge[0]))
+                    edgePosList.remove((edge[1], edge[0]))
                 except:
                     pass
             if edgePosList:
@@ -545,7 +545,7 @@ class GameMap(object):
 
                     if firstVariantCheck or secondVariantCheck:
                         tileCount = tileCount + 1
-                        if tileCount > int(round(((self.n - 2) * (self.m - 2)-len(self.excludedNodes)) / 4.5)):
+                        if tileCount > int(round(((self.n - 2) * (self.m - 2) - len(self.excludedNodes)) / 4.5)):
                             if self.check_edge_in_edgelist(edge) and self.check_edge_in_edgelist(edge2):
                                 self.G.remove_edge(*edge)
                                 self.G.remove_edge(*edge2)
@@ -611,7 +611,7 @@ class GameMap(object):
 
                     if firstVariantCheck or secondVariantCheck:
                         tileCount = tileCount + 1
-                        if tileCount > int(round(((self.n - 2) * (self.m - 2)-len(self.excludedNodes)) / 9)):
+                        if tileCount > int(round(((self.n - 2) * (self.m - 2) - len(self.excludedNodes)) / 9)):
                             if firstVariantCheck:
                                 self.G.remove_edge(*edge3)
                             elif secondVariantCheck:
@@ -787,9 +787,9 @@ class GameMap(object):
             return 0
 
 
-    def get_conected_tasks(self, output=True):
+    def get_tasks(self):
 
-        # Get boundaties
+        # Get boundaries
         boundaries = []
         for i in range(self.n - 1):
             boundaries.append((i, 0))
@@ -799,19 +799,19 @@ class GameMap(object):
             boundaries.append((self.n - 1, j))
         boundaries.extend(self.excludedNodes)
 
-        # Connected components
-        components = nx.connected_components(self.G)
+        series = random.randint(1, 5)
 
-        # Intersection of 2 lists
-        tasks = [filter(lambda x: x in boundaries, sublist) for sublist in components]
+        for i in xrange(series):
+            a = random.choice(boundaries)
+            b = random.choice(boundaries)
+            try:
+                bool(nx.shortest_path(self.G, a, b))
+                pathExist = ' connected '
+            except:
+                pathExist = ' not connected '
 
-        #Remove unuseful task
-        tasks = [x for x in tasks if x != [] and len(x) > 1]
-        if output:
-            for task in tasks:
-                print 'Task: ' + str(task)
-
-        return tasks
+            print 'Task: ' + str(a) + str(pathExist) + str(b)
+        return 1
 
     def output_graph(self):
         # Graph layout
@@ -1003,11 +1003,11 @@ class GameMap(object):
                 checkTilesType = True
 
         self.get_final_tiles()
-        self.get_conected_tasks()
+        self.get_tasks()
         self.export_plist()
         self.output_image()
         self.output_graph()
-        print self.taskObjects
+        # print self.taskObjects
 
 
 # exclude = [(2, 4), (2, 3), (3, 3)]
@@ -1027,10 +1027,11 @@ exclude = []
 # exclude.extend(triangleLeft)
 # exclude.extend(triangleRight)
 
-exclude.extend([(3,3), (5,5)])
+# exclude.extend([(3, 3), (5, 5)])
 excludeNodeWithDegree = {}
-excludeNodeWithDegree[(2, 3)] = 4
-excludeNodeWithDegree[(3, 4)] = 4
-print excludeNodeWithDegree
+# excludeNodeWithDegree[(2, 3)] = 2
+# excludeNodeWithDegree[(3, 4)] = 2
+# print excludeNodeWithDegree
+
 map = GameMap(5, 5, difficultCoefficient=0.2, exclude=exclude, allTileTypes=True, excludeDegree=excludeNodeWithDegree)
 map.make_map()
